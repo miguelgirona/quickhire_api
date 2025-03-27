@@ -21,7 +21,7 @@
             $datosUsuario = $this->verificarToken($token);
             if (!$datosUsuario) {
                 $model = new EmpresasModel();
-                $data = $model->select("id,nombre_empresa,descripcion,id_sector,ciudad,pais,sitio_web")->findAll();
+                $data = $model->select("id,id_usuario,nombre_empresa,descripcion,id_sector,ciudad,pais,sitio_web")->findAll();
                 return $this->respond($data, 200);
             }
 
@@ -39,16 +39,13 @@
         {
             $token = $this->request->getHeaderLine('Authorization');
 
-            if (!$token) {
-                return $this->failUnauthorized('Token requerido');
-            }
-
             $token = str_replace('Bearer ', '', $token);
 
             $datosUsuario = $this->verificarToken($token);
             if (!$datosUsuario) {
-                return $this->failUnauthorized('Token inválido o expirado datos usuario->'. var_export($datosUsuario, true)." token-> ".var_dump($token));
-            }
+                $model = new EmpresasModel();
+                $data = $model->select("id,id_usuario,nombre_empresa,descripcion,id_sector,ciudad,pais,sitio_web")->where('id',$id)->findAll();
+                return $this->respond($data, 200);            }
 
             if($datosUsuario['tipo_usuario'] == ("Administrador") ){
                 $model = new EmpresasModel();

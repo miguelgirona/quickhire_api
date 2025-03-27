@@ -49,7 +49,7 @@
 
             $datosUsuario = $this->verificarToken($token);
             if (!$datosUsuario) {
-                return $this->failUnauthorized('Token inválido o expirado');
+                return $this->failUnauthorized('Token inválido o expirado SHOW');
             }
 
             if($datosUsuario['tipo_usuario'] == "Administrador"){
@@ -256,5 +256,33 @@
             }
 
         }
+
+        public function getFoto($id = null)
+        {
+            // Verificar si el ID es válido
+            if ($id === null) {
+                return $this->respond(
+                    ['error' => 'El ID del usuario es obligatorio.'],
+                    400 // Código de error 400 (Bad Request)
+                );
+            }
+        
+            $model = new UsuariosModel();
+            $foto = $model->select("url_imagen")
+                         ->where('id', $id)
+                         ->first();
+        
+            // Si no se encuentra la foto
+            if ($foto) {
+                return $this->respond($foto, 200); // Respuesta exitosa
+            } else {
+                return $this->respond(
+                    ['error' => 'Foto no encontrada.'],
+                    404 // Código de error 404 (Not Found)
+                );
+            }
+        }
+        
+        
 
     }
