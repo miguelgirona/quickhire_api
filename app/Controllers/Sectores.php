@@ -6,11 +6,9 @@
     use Firebase\JWT\JWT;
     use Firebase\JWT\Key;
 
-    class Sectores extends ResourceController
+    class Sectores extends BaseResourceController
     {
         use ResponseTrait;
-
-        private $clave = "Alumn@1234";
 
         public function index(){
             $model = new SectoresModel();
@@ -157,18 +155,4 @@
 
         }
 
-        public function verificarToken($token)
-        {
-            try {
-                log_message('debug', 'Token recibido: ' . $token);
-        
-                $decoded = JWT::decode($token, new Key($this->clave, 'HS256'));
-                log_message('debug', 'Token decodificado correctamente: ' . print_r($decoded, true));
-        
-                return (array) $decoded;
-            } catch (\Exception $e) {
-                log_message('error', 'Error al decodificar el token: ' . $e->getMessage());
-                return null; 
-            }
-        }
     }

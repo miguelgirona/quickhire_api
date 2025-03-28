@@ -6,12 +6,10 @@
     use Firebase\JWT\JWT;
     use Firebase\JWT\Key;
 
-    class Candidatos extends ResourceController
+    class Candidatos extends BaseResourceController
     {
         use ResponseTrait;
         
-        private $clave = "Alumn@1234";
-
         public function index()
         {
             $token = $this->request->getHeaderLine('Authorization');
@@ -206,21 +204,6 @@
                 return $this->failForbidden("No tienes permiso para editar este usuario");
             }
 
-        }
-
-        public function verificarToken($token)
-        {
-            try {
-                log_message('debug', 'Token recibido: ' . $token);
-        
-                $decoded = JWT::decode($token, new Key($this->clave, 'HS256'));
-                log_message('debug', 'Token decodificado correctamente: ' . print_r($decoded, true));
-        
-                return (array) $decoded;
-            } catch (\Exception $e) {
-                log_message('error', 'Error al decodificar el token: ' . $e->getMessage());
-                return null; 
-            }
         }
 
     }
