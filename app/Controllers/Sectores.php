@@ -133,21 +133,18 @@
                     ], 409);
                 }
             
-                // Inicializamos el array de datos a actualizar
                 $data = [];
 
                 if (!empty($json->sector)) {
                     $data['sector'] = $json->sector;
                 }
 
-                // Si no se pasó ningún dato, retornamos un error
                 if (empty($data)) {
                     return $this->failValidationError('No se ha proporcionado ningún dato válido para actualizar.');
                 }
 
                 $data['updated_at'] = date('Y-m-d H:i:s');;
             
-                // Actualizamos los datos
                 $model->update($id, $data);
             
                 return $this->respond([

@@ -28,14 +28,12 @@
 
         public function show($id = null){
             $model = new OfertasModel();
-            $data = $model->getWhere(['id' => $id])->getResult();  // Esto devuelve un array de objetos
+            $data = $model->getWhere(['id' => $id])->getResult();
         
-            // Verificar si $data no está vacío y acceder correctamente al campo 'requisitos'
             if (!empty($data)) {
-                $requisitos = json_decode($data[0]->requisitos, true);  // Acceder al campo 'requisitos' del objeto
-                $data[0]->requisitos = $requisitos;  // Asignar el resultado decodificado al objeto
+                $requisitos = json_decode($data[0]->requisitos, true); 
+                $data[0]->requisitos = $requisitos; 
             } else {
-                // Si no se encuentra la oferta
                 return $this->respond(['error' => 'Oferta no encontrada'], 404);
             }
         
@@ -164,7 +162,6 @@
                     ], 409);
                 }
             
-                // Inicializamos el array de datos a actualizar
                 $data = [];
 
                 if (!empty($json->titulo)) {
@@ -195,14 +192,12 @@
                     $data['salario_max'] = $json->salario_max;
                 }
 
-                // Si no se pasó ningún dato, retornamos un error
                 if (empty($data)) {
                     return $this->failValidationError('No se ha proporcionado ningún dato válido para actualizar.');
                 }
 
                 $data['updated_at'] = date('Y-m-d H:i:s');
             
-                // Actualizamos los datos
                 $model->update($id, $data);
             
                 return $this->respond([

@@ -156,10 +156,8 @@
                     ], 409);
                 }
             
-                // Inicializamos el array de datos a actualizar
                 $data = [];
             
-                // Solo agregamos los campos proporcionados
                 if (!empty($json->nombre)) {
                     $data['nombre'] = $json->nombre;
                 }
@@ -192,14 +190,12 @@
                     $data['pais'] = $json->pais;
                 }
 
-                // Si no se pasó ningún dato, retornamos un error
                 if (empty($data)) {
                     return $this->failValidationError('No se ha proporcionado ningún dato válido para actualizar.');
                 }
 
                 $data['updated_at'] = date('Y-m-d H:i:s');;
             
-                // Actualizamos los datos
                 $model->update($id, $data);
             
                 return $this->respond([

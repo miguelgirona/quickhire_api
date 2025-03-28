@@ -168,10 +168,8 @@
                     ], 409);
                 }
             
-                // Inicializamos el array de datos a actualizar
                 $data = [];
             
-                // Solo agregamos los campos proporcionados
                 if (!empty($json->nombre)) {
                     $data['nombre'] = $json->nombre;
                 }
@@ -198,12 +196,10 @@
             
                 $data['updated_at'] = date('Y-m-d H:i:s');;
 
-                // Si no se pasó ningún dato, retornamos un error
                 if (empty($data)) {
                     return $this->failValidationError('No se ha proporcionado ningún dato válido para actualizar.');
                 }
             
-                // Actualizamos los datos
                 $model->update($id, $data);
             
                 return $this->respond([
@@ -259,26 +255,22 @@
 
         public function getFoto($id = null)
         {
-            // Verificar si el ID es válido
             if ($id === null) {
                 return $this->respond(
                     ['error' => 'El ID del usuario es obligatorio.'],
-                    400 // Código de error 400 (Bad Request)
+                    400
                 );
             }
         
             $model = new UsuariosModel();
-            $foto = $model->select("url_imagen")
-                         ->where('id', $id)
-                         ->first();
+            $foto = $model->select("url_imagen")->where('id', $id)->first();
         
-            // Si no se encuentra la foto
             if ($foto) {
-                return $this->respond($foto, 200); // Respuesta exitosa
+                return $this->respond($foto, 200);
             } else {
                 return $this->respond(
                     ['error' => 'Foto no encontrada.'],
-                    404 // Código de error 404 (Not Found)
+                    404
                 );
             }
         }
