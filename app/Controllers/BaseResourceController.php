@@ -11,14 +11,14 @@ abstract class BaseResourceController extends ResourceController
 {
     use ResponseTrait;
 
-    // Clave secreta para JWT
+    // clave jwt
     protected $clave = "Alumn@1234";
 
     
     protected function verificarToken($token)
     {
         try {
-     
+
             $decoded = JWT::decode($token, new Key($this->clave, 'HS256'));
      
             return (array) $decoded;

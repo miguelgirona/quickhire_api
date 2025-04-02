@@ -50,9 +50,9 @@
                 return $this->failUnauthorized('Token inválido o expirado datos usuario->'. var_export($datosUsuario, true)." token-> ".var_dump($token));
             }
 
-            if($datosUsuario['tipo_usuario'] == ("Administrador") ){
+            if($datosUsuario['tipo_usuario'] == ("Administrador") || $datosUsuario['id'] == $id ){
                 $model = new CandidatosModel();
-                $data = $model->getWhere(['id' => $id])->getResult();
+                $data = $model->getWhere(['id_usuario' => $id])->getResult();
     
                 return $this->respond($data);
             } else {
@@ -169,7 +169,12 @@
                 }
             
                 if (!empty($json->experiencia)) {
-                    $data['experiencia'] = $json->experiencia;
+                    // Asegúrate de que experiencia no esté vacía antes de agregarla
+                    if (is_array($json->experiencia) && !empty($json->experiencia)) {
+                        $data['experiencia'] = json_encode($json->experiencia);  // Convierte a JSON si es necesario
+                    } else {
+                        return $this->fail('La experiencia no es válida o está vacía');
+                    }
                 }
 
                 if (!empty($json->educacion)) {
@@ -189,19 +194,20 @@
                 }
 
                 if (empty($data)) {
-                    return $this->failValidationError('No se ha proporcionado ningún dato válido para actualizar.');
+                    return $this->fail('No se ha proporcionado ningún dato válido para actualizar.');
                 }
 
                 $data['updated_at'] = date('Y-m-d H:i:s');;
-            
-                $model->update($id, $data);
-            
+
+                $model->where('id_usuario', $id)->set($data)->update();
+
+                            
                 return $this->respond([
                     'status' => 200,
                     'messages' => 'Datos actualizados correctamente.'
                 ]);
             } else {
-                return $this->failForbidden("No tienes permiso para editar este usuario");
+                return $this->failForbidden("No tienes permiso para editar este usuario id= " . $id . " / datos usuraio id= ".$datosUsuario['id']);
             }
 
         }

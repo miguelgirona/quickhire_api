@@ -76,14 +76,17 @@
             }
     
             if (!password_verify($contraseña, $usuario['contraseña'])) {
-                return $this->failUnauthorized('Contraseña incorrecta:'. $contraseña ."    ///    ".$usuario['contraseña']."////////".!password_verify($contraseña, $usuario['contraseña']));
+                return $this->failUnauthorized('Contraseña incorrecta');
             }
     
             $payload = [
                 'id' => $usuario['id'],
                 'nombre' => $usuario['nombre'],
+                'mail' => $usuario['mail'],
+                'telefono' => $usuario['telefono'],
+                'url_imagen' => $usuario['url_imagen'],
                 'tipo_usuario' => $usuario['tipo_usuario'],
-                'exp' => time() + 3600  // El token expira en 1 hora
+                'exp' => time() + 86400  
             ];
     
             $token = JWT::encode($payload, $this->clave, 'HS256');
