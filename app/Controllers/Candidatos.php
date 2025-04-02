@@ -178,11 +178,15 @@
                 }
 
                 if (!empty($json->educacion)) {
-                    $data['educacion'] = $json->educacion;
+                    $data['educacion'] = json_encode($json->educacion);
                 }
             
                 if (!empty($json->habilidades)) {
-                    $data['habilidades'] = $json->habilidades;
+                    $data['habilidades'] = json_encode($json->habilidades);
+                }
+
+                if (!empty($json->idiomas)) {
+                    $data['idiomas'] = json_encode($json->idiomas);
                 }
 
                 if (!empty($json->ciudad)) {
