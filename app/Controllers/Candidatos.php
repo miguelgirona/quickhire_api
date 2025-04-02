@@ -208,7 +208,8 @@
                             
                 return $this->respond([
                     'status' => 200,
-                    'messages' => 'Datos actualizados correctamente.'
+                    'messages' => 'Datos actualizados correctamente.',
+                    'data' => $data,
                 ]);
             } else {
                 return $this->failForbidden("No tienes permiso para editar este usuario id= " . $id . " / datos usuraio id= ".$datosUsuario['id']);
