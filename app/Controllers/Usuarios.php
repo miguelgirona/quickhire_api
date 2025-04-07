@@ -49,7 +49,7 @@
                 return $this->failUnauthorized('Token inválido o expirado SHOW');
             }
 
-            if($datosUsuario['tipo_usuario'] == "Administrador"){
+            if($datosUsuario['id'] == $id || $datosUsuario['tipo_usuario'] == "Administrador"){
                 $model = new UsuariosModel();
                 $data = $model->select('id,nombre,mail,url_imagen,telefono,tipo_usuario,created_at,updated_at')->where('id',$id)->first();
                 
@@ -71,12 +71,12 @@
 
             $usuario = $model->where('nombre', $nombre)->first();
     
+
             if (!$usuario) {
                 return $this->failUnauthorized('Usuario no encontrado');
             }
-    
             if (!password_verify($contraseña, $usuario['contraseña'])) {
-                return $this->failUnauthorized('Contraseña incorrecta');
+                return $this->failUnauthorized('Contraseña incorrecta:hashedpass->'.$hashedPassword."  contraseña user->".$usuario['contraseña']);
             }
     
             $payload = [
@@ -101,11 +101,12 @@
         {
 
             $model = new UsuariosModel();
-            
+
             $data = [
                 'nombre' => $this->request->getPost('nombre'),
                 'mail' => $this->request->getPost('mail'),
-                'contraseña' => $this->request->getPost('contraseña'),
+                'url_imagen' => $this->request->getPost('url_imagen'),
+                'contraseña' => password_hash($this->request->getPost('contraseña'),PASSWORD_BCRYPT),
                 'tipo_usuario' => $this->request->getPost('tipo_usuario')
             ];
             
@@ -186,7 +187,7 @@
                 }
             
                 $model->update($id, $data);
-            
+
                 return $this->respond([
                     'status' => 200,
                     'messages' => 'Datos actualizados correctamente.'
@@ -258,6 +259,76 @@
                     404
                 );
             }
+        }
+        
+        public function saveFoto($id = null)
+        {
+            // Verificar si el ID del usuario fue proporcionado
+            if ($id === null) {
+                return $this->respond(['error' => 'El ID del usuario es obligatorio.'], 400);
+            }
+        
+            // Obtener el token de la cabecera
+            $token = $this->request->getHeaderLine('Authorization');
+            if (!$token) {
+                return $this->failUnauthorized('Token requerido');
+            }
+        
+            $token = str_replace('Bearer ', '', $token);
+            $datosUsuario = $this->verificarToken($token);
+            if (!$datosUsuario) {
+                return $this->failUnauthorized('Token inválido o expirado');
+            }
+        
+            // Verificar permisos
+            if ($datosUsuario['id'] != $id && $datosUsuario['tipo_usuario'] != "Administrador") {
+                return $this->failForbidden("No tienes permiso para cambiar la foto de este usuario");
+            }
+        
+            // Verificar si se envió un archivo
+            $foto = $this->request->getFile('imagen');
+            if (!$foto->isValid()) {
+                return $this->failValidationError('No se ha enviado un archivo válido');
+            }
+        
+            // Asegurar que el archivo sea una imagen válida
+            if (!in_array($foto->getMimeType(), ['image/jpeg', 'image/png', 'image/jpg'])) {
+                return $this->failValidationError('El archivo debe ser una imagen JPEG, PNG o JPG');
+            }
+        
+            // Definir la carpeta de destino
+            $folderPath = WRITEPATH . 'uploads/candidatos/' . $id . '/';
+        
+            // Crear la carpeta si no existe
+            if (!is_dir($folderPath)) {
+                mkdir($folderPath, 0755, true);
+            } else {
+                // Eliminar solo las imágenes existentes en la carpeta
+                $archivos = glob($folderPath . "*.{jpg,jpeg,png}", GLOB_BRACE);
+                foreach ($archivos as $archivo) {
+                    unlink($archivo);
+                }
+            }
+        
+            // Generar un nombre único para la nueva imagen
+            $nuevoNombre = $foto->getRandomName();
+        
+            // Mover la imagen a la carpeta
+            if (!$foto->move($folderPath, $nuevoNombre)) {
+                return $this->failServerError('Error al mover la imagen');
+            }
+        
+            // Actualizar la URL de la imagen en la base de datos
+            $model = new UsuariosModel();
+            $urlImagen = 'https://miguelgirona.com.es/quickhire_api/writable/uploads/candidatos/' . $id . "/" . $nuevoNombre;
+            $model->update($id, ['url_imagen' => $urlImagen]);
+        
+            // Responder con éxito
+            return $this->respond([
+                'status' => 200,
+                'messages' => 'Foto actualizada correctamente.',
+                'url_imagen' => $urlImagen
+            ]);
         }
         
         

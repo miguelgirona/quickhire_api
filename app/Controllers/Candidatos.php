@@ -76,6 +76,14 @@
                 return $this->fail('Usuario existente');
             }
             $model->insert($data);
+            $ruta = FCPATH . "writable/uploads/candidatos/" . $data['id_usuario'];
+            if (!mkdir($ruta, 0755, true)) {
+                // Si mkdir falla, muestra un mensaje de error
+                $error = error_get_last();
+                return $this->failServerError('Error al crear carpeta: ' . $error['message']);
+            }
+            
+             
             $response = [
                 'status'=> 201,
                 'error'=> null,
@@ -105,10 +113,11 @@
 
             if($datosUsuario['id'] == $id || $datosUsuario['tipo_usuario'] == "Administrador"){
                 $model = new CandidatosModel();
-                $data = $model->find($id);
+                $data = $model->where('id_usuario', $id)->first();
+
                 
                 if($data){
-                    $model->delete($id);
+                    $model->where('id_usuario', $id)->delete();
                     $response = [
                         'status'=> 200,
                         'error'=> null,
@@ -215,6 +224,77 @@
                 return $this->failForbidden("No tienes permiso para editar este usuario id= " . $id . " / datos usuraio id= ".$datosUsuario['id']);
             }
 
+        }
+
+        public function saveCV($id = null)
+        {
+            // Verificar si el ID del usuario fue proporcionado
+            if ($id === null) {
+                return $this->respond(['error' => 'El ID del usuario es obligatorio.'], 400);
+            }
+        
+            // Obtener el token de la cabecera
+            $token = $this->request->getHeaderLine('Authorization');
+            if (!$token) {
+                return $this->failUnauthorized('Token requerido');
+            }
+        
+            $token = str_replace('Bearer ', '', $token);
+            $datosUsuario = $this->verificarToken($token);
+            if (!$datosUsuario) {
+                return $this->failUnauthorized('Token inválido o expirado');
+            }
+        
+            // Verificar permisos
+            if ($datosUsuario['id'] != $id && $datosUsuario['tipo_usuario'] != "Administrador") {
+                return $this->failForbidden("No tienes permiso para cambiar el CV de este usuario");
+            }
+        
+            // Verificar si se envió un archivo
+            $cv = $this->request->getFile('url_cv');
+            if (!$cv->isValid()) {
+                return $this->failValidationError('No se ha enviado un archivo válido');
+            }
+        
+            // Asegurar que el archivo sea un PDF válido
+            if ($cv->getMimeType() !== 'application/pdf') {
+                return $this->failValidationError('El archivo debe ser un PDF');
+            }
+        
+            // Definir la carpeta de destino
+            $folderPath = WRITEPATH . 'uploads/candidatos/' . $id . '/';
+        
+            // Crear la carpeta si no existe
+            if (!is_dir($folderPath)) {
+                mkdir($folderPath, 0755, true);
+            } else {
+                // Eliminar solo los archivos PDF existentes en la carpeta
+                $archivos = glob($folderPath . "*.pdf");
+                foreach ($archivos as $archivo) {
+                    unlink($archivo);
+                }
+
+            }
+        
+            // Generar un nombre único para la nueva imagen
+            $nuevoNombre = $cv->getRandomName();
+        
+            // Mover la imagen a la carpeta
+            if (!$cv->move($folderPath, $nuevoNombre)) {
+                return $this->failServerError('Error al mover la imagen');
+            }
+        
+            // Actualizar la URL de la imagen en la base de datos
+            $model = new CandidatosModel();
+            $url_cv = 'https://miguelgirona.com.es/quickhire_api/writable/uploads/candidatos/' . $id . "/" . $nuevoNombre;
+            $model->where('id_usuario', $id)->set(['url_cv' => $url_cv])->update();
+        
+            // Responder con éxito
+            return $this->respond([
+                'status' => 200,
+                'messages' => 'cv actualizada correctamente.',
+                'url_cv' => $url_cv
+            ]);
         }
 
     }

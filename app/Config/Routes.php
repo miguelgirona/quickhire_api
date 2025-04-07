@@ -10,6 +10,8 @@ use App\Controllers\Empresas;
  */
 
 $routes->get('usuarios/foto/(:num)', 'Usuarios::getFoto/$1');
+$routes->post('usuarios/guardarfoto/(:num)', 'Usuarios::saveFoto/$1');
+$routes->post('candidatos/guardarCV/(:num)', 'Candidatos::saveCV/$1');
 $routes->resource('usuarios');
 $routes->resource('candidatos');
 $routes->resource('empresas');
