@@ -19,7 +19,7 @@
             $datosUsuario = $this->verificarToken($token);
             if (!$datosUsuario) {
                 $model = new EmpresasModel();
-                $data = $model->select("id,id_usuario,nombre_empresa,descripcion,id_sector,ciudad,pais,sitio_web")->findAll();
+                $data = $model->select("id,id_usuario,nombre_empresa,descripcion,id_sector,plan,ciudad,pais,sitio_web")->findAll();
                 return $this->respond($data, 200);
             }
 
@@ -42,7 +42,7 @@
             $datosUsuario = $this->verificarToken($token);
             if (!$datosUsuario) {
                 $model = new EmpresasModel();
-                $data = $model->select("id,id_usuario,nombre_empresa,descripcion,id_sector,ciudad,pais,sitio_web")->where('id',$id)->findAll();
+                $data = $model->select("id,id_usuario,nombre_empresa,descripcion,plan,id_sector,ciudad,pais,sitio_web")->where('id',$id)->findAll();
                 return $this->respond($data, 200);            }
 
             if($datosUsuario['tipo_usuario'] == ("Administrador") ){
