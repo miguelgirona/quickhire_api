@@ -13,7 +13,14 @@
 
         public function index(){
             $model = new OfertasModel();
-            $data = $model->findAll();
+
+            $page = $this->request->getGet('page') ?? 1; // Página actual (por defecto 1)
+            $limit = $this->request->getGet('limit') ?? 10; 
+
+            // Calcular el offset para la consulta
+            $offset = ($page - 1) * $limit;
+
+            $data = $model->findAll($limit, $offset);
 
             foreach ($data as &$oferta) {
                 if (isset($oferta['requisitos'])) {
@@ -21,7 +28,20 @@
                 }
             }
 
-            return $this->respond($data,200);
+           // Obtener el total de ofertas para calcular las páginas disponibles
+            $totalOfertas = $model->countAllResults(); // Esto cuenta todas las ofertas sin filtro
+            $totalPages = ceil($totalOfertas / $limit); // Calcular el número total de páginas
+
+            // Devolver la respuesta con las ofertas y la información de paginación
+            return $this->respond([
+                'data' => $data,
+                'pagination' => [
+                    'total' => $totalOfertas,
+                    'page' => $page,
+                    'total_pages' => $totalPages,
+                    'limit' => $limit
+                ]
+            ], 200);
         }
 
         public function show($id = null){
