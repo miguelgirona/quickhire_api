@@ -11,38 +11,32 @@
     {
         use ResponseTrait;
 
-        public function index(){
+        public function index() {
             $model = new OfertasModel();
-
+        
             $page = $this->request->getGet('page') ?? 1; // Página actual (por defecto 1)
-            $limit = $this->request->getGet('limit') ?? 10; 
-
-            // Calcular el offset para la consulta
+            $limit = 6; // Siempre mostramos 6 ofertas más al hacer clic en "Mostrar más"
+        
+            // Calcular el offset para la consulta (el número de la primera oferta que se debe devolver)
             $offset = ($page - 1) * $limit;
-
+        
+            // Obtener las ofertas que se deben devolver según el offset y el límite
             $data = $model->findAll($limit, $offset);
-
+        
+            // Decodificar el campo 'requisitos' si existe
             foreach ($data as &$oferta) {
                 if (isset($oferta['requisitos'])) {
                     $oferta['requisitos'] = json_decode($oferta['requisitos'], true);
                 }
             }
-
-           // Obtener el total de ofertas para calcular las páginas disponibles
-            $totalOfertas = $model->countAllResults(); // Esto cuenta todas las ofertas sin filtro
-            $totalPages = ceil($totalOfertas / $limit); // Calcular el número total de páginas
-
-            // Devolver la respuesta con las ofertas y la información de paginación
+        
+            // Devolver la respuesta con las ofertas. 
+            // No es necesario devolver la paginación completa si el cliente solo pide "Mostrar más"
             return $this->respond([
                 'data' => $data,
-                'pagination' => [
-                    'total' => $totalOfertas,
-                    'page' => $page,
-                    'total_pages' => $totalPages,
-                    'limit' => $limit
-                ]
             ], 200);
         }
+        
 
         public function show($id = null){
             $model = new OfertasModel();
