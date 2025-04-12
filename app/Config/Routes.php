@@ -17,5 +17,6 @@ $routes->resource('candidatos');
 $routes->resource('empresas');
 $routes->resource('sectores');
 $routes->resource('ofertas');
+$routes->resource('candidaturas');
 
 $routes->post('usuarios/login', 'Usuarios::login');
