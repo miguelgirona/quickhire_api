@@ -3,6 +3,7 @@
     use CodeIgniter\RESTful\ResourceController;
     use CodeIgniter\API\ResponseTrait;
     use App\Models\CandidaturasModel;
+    use App\Models\OfertasModel;
     use Firebase\JWT\JWT;
     use Firebase\JWT\Key;
 
@@ -12,9 +13,11 @@
 
         public function index(){
             $model = new CandidaturasModel();
-            $data = $model->findAll();
+            $idCandidato = $this->request->getGet('idCandidato');
 
-            return $this->respond($data,200);
+            $data = $model->getWhere(['id_candidato' => $idCandidato])->getResult();
+
+            return $this->respond($data);
         }
 
         public function show($id = null){
@@ -88,9 +91,12 @@
             }
 
             $model = new CandidaturasModel();
-            $candidato = $model->where('id_candidato', $datosUsuario['id'])->first();
-            
-            if($datosUsuario['tipo_usuario'] == "Administrador" || $candidato){
+            $ofertasModel = new OfertasModel();
+            $idCandidato = $this->request->getGet('idCandidato');
+            $candidato = $model->where('id_candidato', $idCandidato)->first();
+            $empresa = $ofertasModel->where('id_empresa', $datosUsuario['id'])->first();
+
+            if($datosUsuario['tipo_usuario'] == "Administrador" || $candidato || $empresa){
                 $data = $model->find($id);
                 
                 if($data){
@@ -109,7 +115,7 @@
                     return $this->failNotFound('No Data Found with id '.$id);
                 }
             } else {
-                return $this->failForbidden("No tienes permisos para eliminar un sector");
+                return $this->failForbidden("No tienes permisos para eliminar esta candidatura");
             }
 
         }

@@ -331,6 +331,11 @@
             ]);
         }
         
+        public function token() {
+            // Esto hace que se genere el token y se guarde en la cookie
+            $csrf_token = $this->security->get_csrf_hash();
+            $this->output->set_content_type('application/json')->set_output(json_encode(['csrf' => $csrf_token]));
+        }
         
 
     }
