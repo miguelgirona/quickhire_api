@@ -76,7 +76,7 @@
                 return $this->failUnauthorized('Usuario no encontrado');
             }
             if (!password_verify($contraseña, $usuario['contraseña'])) {
-                return $this->failUnauthorized('Contraseña incorrecta:hashedpass->'.$hashedPassword."  contraseña user->".$usuario['contraseña']);
+                return $this->failUnauthorized('Contraseña incorrecta');
             }
     
             $payload = [
@@ -296,8 +296,14 @@
                 return $this->failValidationError('El archivo debe ser una imagen JPEG, PNG o JPG');
             }
         
+            if($datosUsuario['tipo_usuario'] == "Empresa"){
+                $folderPath = WRITEPATH . 'uploads/empresas/' . $id . '/';
+
+            } else if($datosUsuario['tipo_usuario'] == "Candidato"){
+
+                $folderPath = WRITEPATH . 'uploads/candidatos/' . $id . '/';
+            }
             // Definir la carpeta de destino
-            $folderPath = WRITEPATH . 'uploads/candidatos/' . $id . '/';
         
             // Crear la carpeta si no existe
             if (!is_dir($folderPath)) {
@@ -320,7 +326,11 @@
         
             // Actualizar la URL de la imagen en la base de datos
             $model = new UsuariosModel();
-            $urlImagen = 'https://miguelgirona.com.es/quickhire_api/writable/uploads/candidatos/' . $id . "/" . $nuevoNombre;
+            if($datosUsuario['tipo_usuario'] == "Candidato"){
+                $urlImagen = 'https://miguelgirona.com.es/quickhire_api/writable/uploads/candidatos/' . $id . "/" . $nuevoNombre;
+            } else if($datosUsuario['tipo_usuario'] == "Empresa"){
+                $urlImagen = 'https://miguelgirona.com.es/quickhire_api/writable/uploads/empresas/' . $id . "/" . $nuevoNombre;
+            }
             $model->update($id, ['url_imagen' => $urlImagen]);
         
             // Responder con éxito

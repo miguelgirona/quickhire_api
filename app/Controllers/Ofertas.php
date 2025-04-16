@@ -15,6 +15,7 @@
             $model = new OfertasModel();
         
             $page = $this->request->getGet('page') ?? 1; // Página actual (por defecto 1)
+            
             $limit = 6; // Siempre mostramos 6 ofertas más al hacer clic en "Mostrar más"
         
             // Calcular el offset para la consulta (el número de la primera oferta que se debe devolver)
@@ -29,14 +30,24 @@
                     $oferta['requisitos'] = json_decode($oferta['requisitos'], true);
                 }
             }
-        
-            // Devolver la respuesta con las ofertas. 
-            // No es necesario devolver la paginación completa si el cliente solo pide "Mostrar más"
+
             return $this->respond([
                 'data' => $data,
             ], 200);
         }
         
+        public function getOfertasByEmpresa($id = null){
+            $model = new OfertasModel();
+            $data = $model->where('id_empresa',$id)->findAll();
+
+            foreach ($data as &$oferta) {
+                if (isset($oferta['requisitos'])) {
+                    $oferta['requisitos'] = json_decode($oferta['requisitos'], true);
+                }
+            }
+
+            return $this->respond($data);
+        }
 
         public function show($id = null){
             $model = new OfertasModel();

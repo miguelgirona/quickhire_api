@@ -11,7 +11,9 @@ use App\Controllers\Empresas;
 
 $routes->get('usuarios/foto/(:num)', 'Usuarios::getFoto/$1');
 $routes->post('usuarios/guardarfoto/(:num)', 'Usuarios::saveFoto/$1');
-$routes->get('usuarios/token', 'Usuarios::token');
+$routes->get('empresas/showByUserId/(:num)', 'Empresas::showByUserId/$1');
+$routes->get('ofertas/getOfertasByEmpresa/(:num)', 'Ofertas::getOfertasByEmpresa/$1');
+$routes->get('candidaturas/getCandidaturasByOferta/(:num)', 'Candidaturas::getCandidaturasByOferta/$1');
 $routes->post('candidatos/guardarCV/(:num)', 'Candidatos::saveCV/$1');
 $routes->resource('usuarios');
 $routes->resource('candidatos');

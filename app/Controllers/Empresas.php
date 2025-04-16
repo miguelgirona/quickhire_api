@@ -45,7 +45,7 @@
                 $data = $model->select("id,id_usuario,nombre_empresa,descripcion,plan,id_sector,ciudad,pais,sitio_web")->where('id',$id)->findAll();
                 return $this->respond($data, 200);            }
 
-            if($datosUsuario['tipo_usuario'] == ("Administrador") ){
+            if($datosUsuario['tipo_usuario'] == "Administrador"){
                 $model = new EmpresasModel();
                 $data = $model->getWhere(['id' => $id])->getResult();
     
@@ -54,8 +54,27 @@
                 return $this->failForbidden('No eres administrador');
             }
 
+        }
 
+        public function showByUserId($id = null) {
+            $token = $this->request->getHeaderLine('Authorization');
 
+            $token = str_replace('Bearer ', '', $token);
+
+            $datosUsuario = $this->verificarToken($token);
+            if (!$datosUsuario) {
+                $model = new EmpresasModel();
+                $data = $model->select("id,id_usuario,nombre_empresa,descripcion,plan,id_sector,ciudad,pais,sitio_web")->where('id',$id)->findAll();
+                return $this->respond($data, 200);            }
+
+            if($datosUsuario['tipo_usuario'] == "Administrador" || $datosUsuario['id'] == $id){
+                $model = new EmpresasModel();
+                $data = $model->getWhere(['id_usuario' => $id])->getResult();
+    
+                return $this->respond($data);
+            } else {
+                return $this->failForbidden('No eres administrador');
+            }
         }
 
         public function create()
@@ -90,8 +109,7 @@
             return $this->respondCreated($data, 201);
         }
 
-        public function delete($id = null)
-        {
+        public function delete($id = null) {
 
             $token = $this->request->getHeaderLine('Authorization');
 
@@ -108,10 +126,10 @@
 
             if($datosUsuario['id'] == $id || $datosUsuario['tipo_usuario'] == "Administrador"){
                 $model = new EmpresasModel();
-                $data = $model->find($id);
+                $data = $model->where('id_usuario', $id)->first();
                 
                 if($data){
-                    $model->delete($id);
+                    $model->where('id_usuario', $id)->delete();
                     $response = [
                         'status'=> 200,
                         'error'=> null,
@@ -195,8 +213,16 @@
                     $data['validada'] = $json->validada;
                 }
 
+                if (!empty($json->fecha_validacion)) {
+                    $data['fecha_validacion'] = $json->fecha_validacion;
+                }
+
                 if (!empty($json->activa)) {
                     $data['activa'] = $json->activa;
+                }
+
+                if (!empty($json->fecha_activacion)) {
+                    $data['fecha_activacion'] = $json->fecha_activacion;
                 }
 
                 if (empty($data)) {
@@ -205,7 +231,7 @@
 
                 $data['updated_at'] = date('Y-m-d H:i:s');;
             
-                $model->update($id, $data);
+                $model->where('id_usuario', $id)->set($data)->update();
             
                 return $this->respond([
                     'status' => 200,

@@ -4,6 +4,7 @@
     use CodeIgniter\API\ResponseTrait;
     use App\Models\CandidaturasModel;
     use App\Models\OfertasModel;
+    use App\Models\EmpresasModel;
     use Firebase\JWT\JWT;
     use Firebase\JWT\Key;
 
@@ -15,7 +16,7 @@
             $model = new CandidaturasModel();
             $idCandidato = $this->request->getGet('idCandidato');
 
-            $data = $model->getWhere(['id_candidato' => $idCandidato])->getResult();
+            $data = $model->where('id_candidato', $idCandidato)->orderBy('fecha_inscripcion', 'DESC')->findAll();
 
             return $this->respond($data);
         }
@@ -23,6 +24,13 @@
         public function show($id = null){
             $model = new CandidaturasModel();
             $data = $model->getWhere(['id' => $id])->getResult();
+
+            return $this->respond($data);
+        }
+
+        public function getCandidaturasByOferta($id = null){
+            $model = new CandidaturasModel();
+            $data = $model->getWhere(['id_oferta' => $id])->getResult();
 
             return $this->respond($data);
         }
@@ -136,8 +144,11 @@
                 return $this->failUnauthorized('Token inválido o expirado datos usuario->'. var_export($datosUsuario, true)." token-> ".var_dump($token));
             }
 
-            if($datosUsuario['tipo_usuario'] == "Administrador"){
-                $model = new CandidaturasModel();
+            $model = new CandidaturasModel();
+
+            $empresa = $modelEmpresa->where('id_usuario', $datosUsuario['id'])->first();
+
+            if($datosUsuario['tipo_usuario'] == "Administrador" || $empresa){
                 $json = $this->request->getJSON();
                 
                 if (!$json) {
@@ -148,8 +159,8 @@
             
                 $data = [];
 
-                if (!empty($json->sector)) {
-                    $data['sector'] = $json->sector;
+                if (!empty($json->estado)) {
+                    $data['estado'] = $json->estado;
                 }
 
                 if (empty($data)) {
